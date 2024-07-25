@@ -1,75 +1,87 @@
-// 1. getElementByid로 보기, 문제, 버튼 태그 가져오기
-// 2. querySelectorAll로 라디오버튼 가져오기
-// 3. 화면에 첫번째 문제의 보기와 제목을 보여주기 - 문제를 보여주는 코드를 함수로 묶어서 만들기
-// 4. 버튼을 클릭했을 때 다음문제로 넘어가기 문제가 다음으로 바뀐다는 것 = quiz 배열의 인덱스값 증가
-// 5. 선택된 input의 id값과 문제객체의 정답이 일치하는지 비교
-// 6. 문제를 다 풀고나면 맞춘문제/전체문제 알려주기
-// 7. 재시작버튼을 누르면 처음으로 돌아가기
-
-const question = document.getElementById("question");
-const label_a = document.getElementById("a_text");
-const label_b = document.getElementById("b_text");
-const label_c = document.getElementById("c_text");
-const label_d = document.getElementById("d_text");
-const submit = document.getElementById("submit");
-
 const quizData = [
   { question: "뉴진스 멤버가 아닌것은?", a: "하니", b: "민지", c: "원영", d: "혜인", correct: "c" },
   { question: "투바투 멤버가 아닌것은?", a: "연준", b: "용복", c: "범규", d: "태현", correct: "b" },
-  { question: "1 + 1은?", a: "1", b: "2", c: "3", d: "4", correct: "b" },
-  { question: "2 + 2는?", a: "1", b: "2", c: "3", d: "4", correct: "d" },
+  { question: "이번 휴가는?", a: "집", b: "삼척", c: "부산", d: "전주", correct: "d" },
+  { question: "심심할땐?", a: "자바스크립트", b: "html", c: "xd", d: "잠", correct: "d" },
 ];
 
-let num = Number(localStorage.getItem("num") ?? 0);
-localStorage.setItem("num", num);
-let correctNum = Number(localStorage.getItem("correctNum") ?? 0);
-localStorage.setItem("correctNum", correctNum);
+//1. getElementByid로 보기,문제,버튼 태그 가져오기
+// 라디오 버튼
+//2. querySelectorAll로 라디오버튼 가져오기
+const ansewerEls = document.querySelectorAll(".answer");
+// 문제
+const questionEl = document.getElementById("question");
+// 보기
+const a_text = document.getElementById("a_text");
+const b_text = document.getElementById("b_text");
+const c_text = document.getElementById("c_text");
+const d_text = document.getElementById("d_text");
+// 제출버튼
+const submitBtn = document.getElementById("submit");
+// 모든 요소를 자식으로 가지고 있는 부모 div
+const div = document.getElementById("quiz");
 
-const quizDiv = document.getElementById("quiz");
+let currentQuiz = 0;
+// 점수
+let score = 0;
 
-if (num < quizData.length) {
-  quiz();
-  submit.addEventListener("click", () => {
-    const answer = document.querySelectorAll(".answer");
-    // 변수 생성
-    let selectedAnswer = {};
-    answer.forEach((tag) => {
-      // radio 버튼이 체크됐을 때 checked 속성 활성화
-      if (tag.checked) {
-        selectedAnswer = tag;
-      }
-    });
-    // 선택된 라디오 버튼의 id 값과 quizData 배열 안 요소의 이름이 같은 객체 찾기
-    let isTrue = quizData[num].correct === selectedAnswer.id;
-    if (isTrue) {
-      localStorage.setItem("correctNum", correctNum + 1);
+// 첫번째 문제 출력
+loadQuiz();
+
+function loadQuiz() {
+  dselectAnswer();
+  const currentQuizDate = quizData[currentQuiz];
+  // 태그에 질문값 넣기
+  questionEl.textContent = currentQuizDate.question;
+  // 보기 값 넣기
+  a_text.textContent = currentQuizDate.a;
+  b_text.textContent = currentQuizDate.b;
+  c_text.textContent = currentQuizDate.c;
+  d_text.textContent = currentQuizDate.d;
+}
+
+// input 태그의 체크 속성 초기화
+function dselectAnswer() {
+  ansewerEls.forEach((ansewerEls) => {
+    ansewerEls.checked = false;
+  });
+}
+// 선택된 라디오태그의 id값 가져오기
+function getSelected() {
+  let answer;
+
+  ansewerEls.forEach((el) => {
+    // el -> <input>
+    // input태그에 checked속성이 ture라면 태그의 id값을 answer에 넣기
+    if (el.checked) {
+      answer = el.id;
     }
-    localStorage.setItem("num", num + 1);
-    location.reload();
   });
-} else {
-  quizDiv.innerHTML = "";
-  const div = document.createElement("div");
-  div.setAttribute("class", "quiz-header");
-  const h2 = document.createElement("h2");
-  h2.innerHTML = `You answered correctly at ${correctNum}/${quizData.length} questions`;
-  div.appendChild(h2);
-  quizDiv.appendChild(div);
-  const button = document.createElement("button");
-  button.id = "reload";
-  button.addEventListener("click", () => {
-    localStorage.setItem("num", 0);
-    localStorage.setItem("correctNum", 0);
-    location.reload();
-  });
-  button.innerHTML = "Reload";
-  quizDiv.appendChild(button);
+  // answer 변수 반환
+  return answer;
 }
 
-function quiz() {
-  question.innerHTML = quizData[num].question;
-  label_a.innerHTML = quizData[num].a;
-  label_b.innerHTML = quizData[num].b;
-  label_c.innerHTML = quizData[num].c;
-  label_d.innerHTML = quizData[num].d;
-}
+submitBtn.addEventListener("click", () => {
+  // 선택된 보기 값
+  const answer = getSelected();
+  // 선택된 id값이 존재한다면 실행
+  if (answer) {
+    if (answer === quizData[currentQuiz].correct) {
+      // 선택한 값이 정답과 일치한다면
+      // 점수 1점 추가
+      score++;
+    }
+    // 문제 인덱스 1추가
+    currentQuiz++;
+    // 문제 개수가 index값보다 크다면
+    if (currentQuiz < quizData.length) {
+      // 퀴즈 불러오기 함수 호출
+      loadQuiz();
+    }
+    // 문제를 다 풀었을때
+    else {
+      div.innerHTML = `<h2>총 ${score}/${quizData.length}개 맞추셨습니다.</h2>
+      <button onclick='location.reload();'>다시하기</button>`;
+    }
+  }
+});
