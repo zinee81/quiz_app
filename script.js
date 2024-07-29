@@ -5,9 +5,7 @@ const quizData = [
   { question: "심심할땐?", a: "자바스크립트", b: "html", c: "xd", d: "잠", correct: "d" },
 ];
 
-//1. getElementByid로 보기,문제,버튼 태그 가져오기
 // 라디오 버튼
-//2. querySelectorAll로 라디오버튼 가져오기
 const ansewerEls = document.querySelectorAll(".answer");
 // 문제
 const questionEl = document.getElementById("question");
